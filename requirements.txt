@@ -1,2 +1,3 @@
-fastapi[latest]
+fastapi[standard]
 numpy
+sympy
