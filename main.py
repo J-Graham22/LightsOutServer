@@ -2,8 +2,17 @@ from fastapi import FastAPI
 import math
 import numpy as np
 import sympy as sp
+import logging
 
-app = FastAPI()
+logging.basicConfig(
+    level = logging.INFO,
+    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt = "%Y-%m-%d %H:%M:%S",
+)
+
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Color Puzzle API")
 
 @app.get("/")
 def root():
@@ -40,16 +49,20 @@ def matrix_multiplication_solution(puzzle_input: str):
 
     # b = A * x + p
     # x = (b - p) * A^-1
+    logging.info(f"Solving puzzle for puzzle input {puzzle_input}")
+
     puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
-    print('puzzle input matrix:')
-    print(puzzle_input_matrix)
+    if puzzle_input_matrix is None:
+        return "" #todo: change this to something proper
+    logging.info(f"Converted puzzle input to matrix")
+
     desired_output_matrix = create_desired_output_matrix(len(puzzle_input))
-    print('desired output matrix:')
-    print(desired_output_matrix)
+
     transformation_matrix = create_transformation_matrix(len(puzzle_input_matrix))
-    print('transformation matrix:')
-    print(transformation_matrix)
-    return 0
+    if transformation_matrix is None:
+        return "" #todo: change this to something proper
+    logging.info(f"Created transformation matrix of dimensions {len(puzzle_input)}x{len(puzzle_input)}")
+
     inverse_transformation_matrix = np.array(sp.Matrix(transformation_matrix).inv_mod(2)).astype(int)
     print('inverse transformation matrix:')
     print(inverse_transformation_matrix)
@@ -67,8 +80,7 @@ def check_solution(matrix1, matrix2) -> bool:
 def convert_string_representation_to_matrix(string_representation: str) -> np.array:
     n = math.sqrt(len(string_representation))
     if not n.is_integer():
-        #todo: replace with proper logging
-        print("Input does not represent a square matrix")
+        logger.info(f"Input does not represent a square matrix. Length provided: {len(string_representation)}")
         return None
 
     n = int(n)
@@ -88,23 +100,18 @@ def create_transformation_matrix(size: int) -> np.array:
 
     side_length = math.sqrt(size)
     if not side_length.is_integer():
-        #todo: replace with proper logging
-        print('Size is not representative of a square matrix')
-        return matrix
-    print(matrix)
+        logger.info(f"Size is not representative of a square matrix. Size provided: {size}")
+        return None 
 
     for i in range(size):
-        print(i)
         # a light will toggle itself and its neightbors
         matrix[i, i] = int(1)
         # an up or down neighbor might be out of bounds
         up_i = int(i - side_length)
-        print(up_i)
         if up_i >= 0:
             matrix[i, up_i] = int(1)
             # matrix[up_i, i] = int(1)
         down_i = int(i + side_length)
-        print(down_i)
         if down_i < size:
             matrix[i, down_i] = int(1)
         # a left or right neighbor might not actually be a neighbor
@@ -114,5 +121,4 @@ def create_transformation_matrix(size: int) -> np.array:
         right_i = int(i + 1)
         if i % side_length != side_length - 1 and right_i < size:
             matrix[i, right_i] = int(1)
-        print('')
     return matrix
