@@ -49,6 +49,7 @@ def matrix_multiplication_solution(puzzle_input: str):
     transformation_matrix = create_transformation_matrix(len(puzzle_input_matrix))
     print('transformation matrix:')
     print(transformation_matrix)
+    return 0
     inverse_transformation_matrix = np.array(sp.Matrix(transformation_matrix).inv_mod(2)).astype(int)
     print('inverse transformation matrix:')
     print(inverse_transformation_matrix)
@@ -85,27 +86,33 @@ def create_desired_output_matrix(size: int) -> np.array:
 def create_transformation_matrix(size: int) -> np.array:
     matrix = np.zeros((size, size))
 
+    side_length = math.sqrt(size)
+    if not side_length.is_integer():
+        #todo: replace with proper logging
+        print('Size is not representative of a square matrix')
+        return matrix
+    print(matrix)
+
     for i in range(size):
+        print(i)
         # a light will toggle itself and its neightbors
-        matrix[i, i] = 1
+        matrix[i, i] = int(1)
         # an up or down neighbor might be out of bounds
-        up_i = i - size
+        up_i = int(i - side_length)
+        print(up_i)
         if up_i >= 0:
-            pass
-            # matrix[i, up_i] = 1
-            matrix[up_i, i] = 1
-        down_i = i + size
+            matrix[i, up_i] = int(1)
+            # matrix[up_i, i] = int(1)
+        down_i = int(i + side_length)
+        print(down_i)
         if down_i < size:
-            pass
-            # matrix[i, down_i] = 1
-            matrix[down_i, i] = 1
+            matrix[i, down_i] = int(1)
         # a left or right neighbor might not actually be a neighbor
-        left_i = i - 1
-        if i % size != 0:
-            pass
-            matrix[left_i, i] = 1
-        right_i = i + 1
-        if i % size != size - 1:
-            pass
-            matrix[right_i, i] = 1
+        left_i = int(i - 1)
+        if i % side_length != 0 and left_i >= 0:
+            matrix[i, left_i] = int(1)
+        right_i = int(i + 1)
+        if i % side_length != side_length - 1 and right_i < size:
+            matrix[i, right_i] = int(1)
+        print('')
     return matrix
