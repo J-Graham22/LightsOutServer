@@ -3,6 +3,7 @@ import math
 import numpy as np
 import sympy as sp
 import logging
+import random
 
 logging.basicConfig(
     level = logging.INFO,
@@ -23,10 +24,46 @@ def root():
 # - generate solvable puzzle
 # - solve matrix via matrix multiplication
 # - solve matrix via brute force
+@app.get("/puzzle/solvable/{puzzle_length}")
+def generate_puzzle(puzzle_length: int):
+    # generate based on math, guaranteed to be solvable by matrix multiplication
+    # to start, only generate puzzles of 
+
+    # x: solution matrix
+    # p: puzzle input matrix
+    # b: desired output matrix
+    # A: transformation matrix
+
+    # b = A * x + p
+    # p = b - A * x
+    # in this case, randomly generating the solution matrix can give us the puzzle matrix
+
+
+    pass
+
+@app.get("/puzzle/random/{puzzle_length}")
+def generate_puzzle(puzzle_length: int):
+    # purely random, not guaranteed to be solvable by matrix multiplicaiton or solvable at all
+    # to start, only generate puzzles of 3x3, 4x4, and 5x5
+    pass
+
 @app.get("/solution/brute_force/{puzzle_input}")
 def brute_force(puzzle_input: str):
-    puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
+    # x: solution matrix
+    # p: puzzle input matrix
+    # b: desired output matrix
+    # A: transformation matrix
 
+    # b = A * x + p
+    # x = (b - p) * A^-1
+    logging.info(f"Brute force solving puzzle for puzzle input {puzzle_input}")
+
+    puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
+    if puzzle_input_matrix is None:
+        return "" #todo: change this to something proper
+    logging.info(f"Converted puzzle input to matrix")
+
+    solutions = []
     max_solution_val = 2 ** len(puzzle_input)
 
     for i in range(0, max_solution_val + 1):
@@ -49,7 +86,7 @@ def matrix_multiplication_solution(puzzle_input: str):
 
     # b = A * x + p
     # x = (b - p) * A^-1
-    logging.info(f"Solving puzzle for puzzle input {puzzle_input}")
+    logging.info(f"Mathematically solving puzzle for puzzle input {puzzle_input}")
 
     puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
     if puzzle_input_matrix is None:
@@ -63,9 +100,13 @@ def matrix_multiplication_solution(puzzle_input: str):
         return "" #todo: change this to something proper
     logging.info(f"Created transformation matrix of dimensions {len(puzzle_input)}x{len(puzzle_input)}")
 
-    inverse_transformation_matrix = np.array(sp.Matrix(transformation_matrix).inv_mod(2)).astype(int)
-    print('inverse transformation matrix:')
-    print(inverse_transformation_matrix)
+    try:
+        inverse_transformation_matrix = np.array(sp.Matrix(transformation_matrix).inv_mod(2)).astype(int)
+        print('inverse transformation matrix:')
+        print(inverse_transformation_matrix)
+    except sp.matrices.NonSquareMatrixError as ex:
+        logging.info(f"Unable to solve via matrix multiplication: {ex.message}")
+        return "" #todo: change this to something proper
 
     x = (desired_output_matrix - puzzle_input_matrix) * inverse_transformation_matrix
     print(x)
@@ -122,3 +163,11 @@ def create_transformation_matrix(size: int) -> np.array:
         if i % side_length != side_length - 1 and right_i < size:
             matrix[i, right_i] = int(1)
     return matrix
+
+def randomly_generate_matrix(size: int) -> np.array:
+    matrix = []
+
+    for i in range(size):
+        matrix.append(random.randrange(0,2))
+
+    return np.array(matrix)
