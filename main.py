@@ -37,15 +37,30 @@ def generate_puzzle(puzzle_length: int):
     # b = A * x + p
     # p = b - A * x
     # in this case, randomly generating the solution matrix can give us the puzzle matrix
+    x = randomly_generate_matrix(puzzle_length)
+    print(x)
+    b = create_desired_output_matrix(puzzle_length)
+    print(b)
+    A = create_transformation_matrix(puzzle_length)
+    for i in A:
+        print(i)
+    print('-----------')
 
+    temp = np.matmul(A, x)
+    print('temp')
 
-    pass
+    p = b - temp
+    print(p)
+
+    p = mod_matrix(p, 2)
+    return convert_numpy_array_to_string_rep(p)
+
 
 @app.get("/puzzle/random/{puzzle_length}")
 def generate_puzzle(puzzle_length: int):
     # purely random, not guaranteed to be solvable by matrix multiplicaiton or solvable at all
     # to start, only generate puzzles of 3x3, 4x4, and 5x5
-    pass
+    return randomly_generate_matrix(puzzle_length)
 
 @app.get("/solution/brute_force/{puzzle_input}")
 def brute_force(puzzle_input: str):
@@ -108,7 +123,7 @@ def matrix_multiplication_solution(puzzle_input: str):
         logging.info(f"Unable to solve via matrix multiplication: {ex.message}")
         return "" #todo: change this to something proper
 
-    x = (desired_output_matrix - puzzle_input_matrix) * inverse_transformation_matrix
+    x = np.matmul(desired_output_matrix - puzzle_input_matrix, inverse_transformation_matrix)
     print(x)
 
     return x.tolist()
@@ -137,7 +152,7 @@ def create_desired_output_matrix(size: int) -> np.array:
     return np.array(matrix)
 
 def create_transformation_matrix(size: int) -> np.array:
-    matrix = np.zeros((size, size))
+    matrix = np.zeros((size, size), dtype=int)
 
     side_length = math.sqrt(size)
     if not side_length.is_integer():
@@ -171,3 +186,21 @@ def randomly_generate_matrix(size: int) -> np.array:
         matrix.append(random.randrange(0,2))
 
     return np.array(matrix)
+
+def convert_numpy_array_to_string_rep(matrix: np.array):
+    str_rep = ''
+
+    for i in matrix:
+        str_rep += str(i)
+
+    return str_rep
+
+def mod_matrix(matrix: np.array, mod: int):
+    m = []
+
+    for i in matrix:
+        i = abs(i)
+        m.append(i % mod)
+
+    return np.array(m)
+        
