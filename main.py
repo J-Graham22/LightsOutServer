@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import math
 import numpy as np
 import sympy as sp
@@ -14,6 +15,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Color Puzzle API")
+
+origins = [
+    "http://localhost",
+    "https://localhost",
+    "http://localhost:5173",
+    "https://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
@@ -53,7 +69,10 @@ def generate_puzzle(puzzle_length: int):
     print(p)
 
     p = mod_matrix(p, 2)
-    return convert_numpy_array_to_string_rep(p)
+    rep = convert_numpy_array_to_string_rep(p)
+    print(rep)
+    return rep
+
 
 
 @app.get("/puzzle/random/{puzzle_length}")
