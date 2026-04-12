@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Color Puzzle API")
 
 origins = [
+    "http://localhost/",
+    "https://localhost/",
+    "http://localhost:5173/",
+    "https://localhost:5173/",
     "http://localhost",
     "https://localhost",
     "http://localhost:5173",
@@ -69,6 +73,8 @@ def generate_puzzle(puzzle_length: int):
     print(p)
 
     p = mod_matrix(p, 2)
+    print(p)
+    print(p.shape)
     rep = convert_numpy_array_to_string_rep(p)
     print(rep)
     return rep
@@ -92,6 +98,8 @@ def brute_force(puzzle_input: str):
     # x = (b - p) * A^-1
     logging.info(f"Brute force solving puzzle for puzzle input {puzzle_input}")
 
+    print(puzzle_input)
+    print(len(puzzle_input))
     puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
     if puzzle_input_matrix is None:
         return "" #todo: change this to something proper
@@ -100,15 +108,36 @@ def brute_force(puzzle_input: str):
     solutions = []
     max_solution_val = 2 ** len(puzzle_input)
 
-    for i in range(0, max_solution_val + 1):
-        binary_representation = bin(i)[2:]
+    A = create_transformation_matrix(len(puzzle_input))
+    b = create_desired_output_matrix(len(puzzle_input))
 
+    print(max_solution_val)
+    for i in range(1, max_solution_val - 1):
+        num_of_digits = len(puzzle_input) + 2
+        binary_representation = format(i, f'#0{(num_of_digits)}b')[2:]
+        #print(binary_representation)
+
+        print('------------------')
+        print(binary_representation)
         guess_matrix = convert_string_representation_to_matrix(binary_representation)
+        print(guess_matrix)
+        print(guess_matrix.shape)
+        guess_matrix = convert_string_representation_to_matrix(binary_representation) #.reshape((1,len(puzzle_input)))
 
-        if check_solution(puzzle_input_matrix, guess_matrix):
-            return binary_representation
-    
-    return ''
+        result = np.matmul(A, guess_matrix) + puzzle_input_matrix
+
+        print(type(result))
+        print(result)
+
+        #result = mod_matrix(result, 2)
+        for i in result:
+            print(i % 2)
+        print(result)
+        print(b)
+        if np.array_equal(result, b):
+            solutions.append(guess_matrix)
+
+    return solutions
 
 
 @app.get("/solution/matrix_multiplication/{puzzle_input}")
@@ -144,12 +173,15 @@ def matrix_multiplication_solution(puzzle_input: str):
 
     x = np.matmul(desired_output_matrix - puzzle_input_matrix, inverse_transformation_matrix)
     print(x)
+    x = mod_matrix(x, 2)
+    print(x)
 
     return x.tolist()
 
 #helper methods
 #get max value
 def check_solution(matrix1, matrix2) -> bool:
+    #todo: implement this
     pass
 
 def convert_string_representation_to_matrix(string_representation: str) -> np.array:
@@ -215,11 +247,13 @@ def convert_numpy_array_to_string_rep(matrix: np.array):
     return str_rep
 
 def mod_matrix(matrix: np.array, mod: int):
-    m = []
+    try:
+        m = []
 
-    for i in matrix:
-        i = abs(i)
-        m.append(i % mod)
+        for i in matrix:
+            i = abs(i)
+            m.append(i % mod)
 
-    return np.array(m)
-        
+        return np.array(m)
+    except Exception as esc:
+        print(esc)
