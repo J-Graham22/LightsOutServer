@@ -71,6 +71,7 @@ def generate_puzzle(puzzle_length: int):
 
     p = b - temp
     print(p)
+    print(type(p))
 
     p = mod_matrix(p, 2)
     print(p)
@@ -124,18 +125,21 @@ def brute_force(puzzle_input: str):
         print(guess_matrix.shape)
         guess_matrix = convert_string_representation_to_matrix(binary_representation) #.reshape((1,len(puzzle_input)))
 
-        result = np.matmul(A, guess_matrix) + puzzle_input_matrix
+        result = np.add(np.matmul(A, guess_matrix), puzzle_input_matrix)
 
         print(type(result))
         print(result)
 
-        #result = mod_matrix(result, 2)
-        for i in result:
-            print(i % 2)
+        print('modding')
+        result = mod_matrix(result, 2)
+        print('modded!')
+        # for i in result:
+        #     print(i % 2)
         print(result)
         print(b)
         if np.array_equal(result, b):
-            solutions.append(guess_matrix)
+            print('adding!')
+            solutions.append(convert_numpy_array_to_string_rep(guess_matrix))
 
     return solutions
 
@@ -173,6 +177,7 @@ def matrix_multiplication_solution(puzzle_input: str):
 
     x = np.matmul(desired_output_matrix - puzzle_input_matrix, inverse_transformation_matrix)
     print(x)
+    print(type(x))
     x = mod_matrix(x, 2)
     print(x)
 
@@ -250,9 +255,13 @@ def mod_matrix(matrix: np.array, mod: int):
     try:
         m = []
 
-        for i in matrix:
-            i = abs(i)
-            m.append(i % mod)
+        # for i in matrix:
+        #     i = abs(i)
+        #     m.append(i % mod)
+        for i in range(len(matrix)):
+            x = matrix[i]
+            x = abs(x)
+            m.append(x % mod)
 
         return np.array(m)
     except Exception as esc:
