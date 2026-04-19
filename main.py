@@ -58,26 +58,15 @@ def generate_puzzle(puzzle_length: int):
     # p = b - A * x
     # in this case, randomly generating the solution matrix can give us the puzzle matrix
     x = randomly_generate_matrix(puzzle_length)
-    print(x)
     b = create_desired_output_matrix(puzzle_length)
-    print(b)
     A = create_transformation_matrix(puzzle_length)
-    for i in A:
-        print(i)
-    print('-----------')
 
     temp = np.matmul(A, x)
-    print('temp')
 
     p = b - temp
-    print(p)
-    print(type(p))
 
     p = mod_matrix(p, 2)
-    print(p)
-    print(p.shape)
     rep = convert_numpy_array_to_string_rep(p)
-    print(rep)
     return rep
 
 
@@ -99,8 +88,6 @@ def brute_force(puzzle_input: str):
     # x = (b - p) * A^-1
     logging.info(f"Brute force solving puzzle for puzzle input {puzzle_input}")
 
-    print(puzzle_input)
-    print(len(puzzle_input))
     puzzle_input_matrix = convert_string_representation_to_matrix(puzzle_input)
     if puzzle_input_matrix is None:
         return "" #todo: change this to something proper
@@ -118,25 +105,12 @@ def brute_force(puzzle_input: str):
         binary_representation = format(i, f'#0{(num_of_digits)}b')[2:]
         #print(binary_representation)
 
-        print('------------------')
-        print(binary_representation)
-        guess_matrix = convert_string_representation_to_matrix(binary_representation)
-        print(guess_matrix)
-        print(guess_matrix.shape)
         guess_matrix = convert_string_representation_to_matrix(binary_representation) #.reshape((1,len(puzzle_input)))
 
         result = np.add(np.matmul(A, guess_matrix), puzzle_input_matrix)
-
-        print(type(result))
-        print(result)
-
-        print('modding')
         result = mod_matrix(result, 2)
-        print('modded!')
         # for i in result:
         #     print(i % 2)
-        print(result)
-        print(b)
         if np.array_equal(result, b):
             print('adding!')
             solutions.append(convert_numpy_array_to_string_rep(guess_matrix))
@@ -166,6 +140,7 @@ def matrix_multiplication_solution(puzzle_input: str):
     if transformation_matrix is None:
         return "" #todo: change this to something proper
     logging.info(f"Created transformation matrix of dimensions {len(puzzle_input)}x{len(puzzle_input)}")
+    print(transformation_matrix)
 
     try:
         inverse_transformation_matrix = np.array(sp.Matrix(transformation_matrix).inv_mod(2)).astype(int)
@@ -176,10 +151,7 @@ def matrix_multiplication_solution(puzzle_input: str):
         return "" #todo: change this to something proper
 
     x = np.matmul(desired_output_matrix - puzzle_input_matrix, inverse_transformation_matrix)
-    print(x)
-    print(type(x))
     x = mod_matrix(x, 2)
-    print(x)
 
     return x.tolist()
 
