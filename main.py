@@ -5,6 +5,8 @@ import numpy as np
 import sympy as sp
 import logging
 import random
+import os
+from dotenv import load_dotenv
 
 logging.basicConfig(
     level = logging.INFO,
@@ -16,16 +18,9 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Color Puzzle API")
 
-origins = [
-    "http://localhost/",
-    "https://localhost/",
-    "http://localhost:5173/",
-    "https://localhost:5173/",
-    "http://localhost",
-    "https://localhost",
-    "http://localhost:5173",
-    "https://localhost:5173",
-]
+load_dotenv()
+
+origins = os.getenv("ALLOWED_ORIGINS").split(',')
 
 app.add_middleware(
     CORSMiddleware,
